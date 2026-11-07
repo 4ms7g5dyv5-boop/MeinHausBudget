@@ -138,7 +138,7 @@ l.forEach(function(r){var t=nm(S.toepfe,r.topf),ok=r.status==="bezahlt";
 h+='<div class="li" tabindex="0" role="button" data-a="edit-r" data-id="'+r.id+'"><button class="chk'+(ok?" on":"")+'" data-a="tog" data-id="'+r.id+'" aria-label="'+(ok?"Als offen markieren":"Als bezahlt markieren")+'">'+(ok?"✓":"")+'</button><div class="m"><b>'+e(nm(S.gewerke,r.gewerk)||"Ohne Gewerk")+"</b><small>"+dt(r.datum)+(t?" · "+e(t):"")+(r.notiz?" · "+e(r.notiz):"")+'</small></div><span class="a">'+eur(r.betrag,2)+"</span></div>"});
 return h}
 function vGe(st){var h='<div class="hd"><h2>Gewerke</h2><button class="pri" data-a="add-g">+ Gewerk</button></div><p class="hint">Verteilt: '+eur(st.budget)+" von "+eur(st.rahmen)+" Rahmen</p>";
-S.gewerke.forEach(function(g){var x=st.g[g.id];h+='<div class="li" tabindex="0" role="button" data-a="edit-g" data-id="'+g.id+'"><div class="m"><b>'+e(g.name)+"</b><small>Ausgegeben "+eur(x.bez+x.off)+'</small></div><span class="a">'+eur(g.budget)+"</span></div>"});
+S.gewerke.forEach(function(g){var x=st.g[g.id];h+='<div class="li" tabindex="0" role="button" data-a="edit-g" data-id="'+g.id+'"><div class="m"><b>'+e(g.name)+"</b><small>Ausgegeben "+eur(x.bez+x.off)+(g.abger?" · abgerechnet":"")+'</small></div><span class="a">'+eur(g.budget)+"</span></div>"});
 return h}
 function vTo(st){var h='<div class="hd"><h2>Töpfe</h2><button class="pri" data-a="add-t">+ Topf</button></div><p class="hint">Rahmen der Darlehen und dein Eigenkapital.</p>';
 S.toepfe.forEach(function(t){var x=st.t[t.id];h+='<div class="li" tabindex="0" role="button" data-a="edit-t" data-id="'+t.id+'"><div class="m"><b>'+e(t.name)+"</b><small>Genutzt "+eur(x.bez+x.off)+'</small></div><span class="a">'+eur(t.rahmen)+"</span></div>"});
@@ -165,13 +165,14 @@ openForm(n?"Neue Rechnung":"Rechnung bearbeiten",[{k:"datum",l:"Datum",t:"date"}
 function(v){var b=num(v.betrag);if(isNaN(b)||!v.datum)return false;var d={datum:v.datum,gewerk:v.gewerk,topf:v.topf,betrag:b,status:v.status,notiz:v.notiz.trim()};
 if(n){d.id=uid();S.rechnungen.push(d)}else Object.assign(r,d)},
 n?null:function(){S.rechnungen=S.rechnungen.filter(function(x){return x!==r})})}
-function fNV(list,it,k,t1,t2,lbl){var n=!it,v={name:n?"":it.name};v[k]=n?"":fm(it[k]);
-openForm(n?t1:t2,[{k:"name",l:"Name"},{k:k,l:lbl,t:"money"}],v,function(o){var m=num(o[k]);if(!o.name.trim()||isNaN(m))return false;
-if(n){var x={id:uid(),name:o.name.trim()};x[k]=m;S[list].push(x)}else{it.name=o.name.trim();it[k]=m}},
+function fNV(list,it,k,t1,t2,lbl){var n=!it,gw=list==="gewerke",v={name:n?"":it.name,abger:gw&&it&&it.abger?"1":"0"};v[k]=n?"":fm(it[k]);
+openForm(n?t1:t2,[{k:"name",l:"Name"},{k:k,l:lbl,t:"money"}].concat(gw?[{k:"abger",l:"Abgerechnet (Schlussrechnung liegt vor)",t:"select",o:[["0","Nein"],["1","Ja"]]}]:[]),v,function(o){var m=num(o[k]);if(!o.name.trim()||isNaN(m))return false;
+if(n){var x={id:uid(),name:o.name.trim()};x[k]=m;if(gw)x.abger=o.abger==="1";S[list].push(x)}else{it.name=o.name.trim();it[k]=m;if(gw)it.abger=o.abger==="1"}},
 n?null:function(){S[list]=S[list].filter(function(x){return x!==it})})}
 function mig(o){if(!o.optionen){o.optionen=[];o.abzuege=[];["Fertighaus SchreyoeggBau (Festpreis)","Fliesen","Küche (extern)","Bodenbeläge (Eigenleistung)"].forEach(function(n){if(!o.gewerke.some(function(g){return g.name===n}))o.gewerke.push({id:uid(),name:n,budget:0})})}if(!o.setup)o.setup={done:o.toepfe.some(function(t){return t.rahmen})||o.gewerke.some(function(g){return g.budget})||o.rechnungen.length>0,step:0};if(!o.bem)o.bem=defBem();return o}
 function chosen(g){return S.optionen.filter(function(o){return o.gewerk===g.id&&o.gewaehlt})[0]}
-function plan(g){var c=chosen(g);return c?c.preis:g.budget}
+function spent(g){var t=0;S.rechnungen.forEach(function(r){if(r.gewerk===g.id)t+=r.betrag});return t}
+function plan(g){var c=chosen(g),b=c?c.preis:g.budget,x=spent(g);return g.abger&&x>0?x:Math.max(b,x)}
 function amp(p,b){return p>b?"bad":p>b*.9?"warn":"ok"}
 function defBem(){return["Badezimmer: Armaturen","Badezimmer: Sanitärobjekte und Möbel","Gäste-WC: Sanitärobjekte, Armaturen und Möbel","Fenster: Größe und Farbe","Rollläden / Lamellenstore: Farbe","Elektrische Rollläden: Anzahl","Außenfassade: Farbe und Ausführung","Haustür: Farbgebung und Art","Fliesen inklusive Verlegung","Elektrik (Steckdosen, Lichtschalter, Smarthome)"].map(function(n,i){return{id:"b"+i,name:n,status:"offen",betrag:0,notiz:""}})}
 function bval(b){return b.status==="auf"?"+"+eur(b.betrag):b.status==="ab"?"−"+eur(b.betrag):b.status==="standard"?"Standard":"offen"}
@@ -211,13 +212,13 @@ else if(k==="aus"){t="Ausgegeben";h+="<h4>Aus den Rechnungen</h4>"+crow("Bezahlt
 else if(k==="frei"){t="Frei";h+="<h4>Rahmen minus Rechnungen</h4>"+crow("Rahmen",st.rahmen,"",1)+crow("Ausgegeben (bezahlt und offen)",-used)+ctot("Frei",st.rahmen-used)+clink("Woraus besteht „Ausgegeben“?","aus")}
 else if(k==="spiel"){t="Spielraum";h+="<h4>Rahmen</h4>";tf();h+="<h4>Abzüglich Prognose</h4>"+crow("Prognose",-st.prog,"erwartete Gesamtkosten")+ctot("Spielraum",st.rahmen-st.prog)+"<small>Ist der Spielraum negativ, liegt die Planung über dem Rahmen.</small>"+clink("Rechenweg der Prognose","prog")}
 else{t="Prognose";var gs=0;h+="<h4>Budgets der Gewerke</h4>";
-S.gewerke.forEach(function(x){var q=plan(x);gs+=q;if(q)h+=crow(x.name,q)});
+S.gewerke.forEach(function(x){var q=plan(x),c=chosen(x),b=c?c.preis:x.budget,sp=spent(x),n="";if(q!==b)n=x.abger&&sp>0?"Budget "+eur(b)+" → abgerechnet "+eur(q):"Rechnungen "+eur(sp)+" liegen über dem Budget "+eur(b);gs+=q;if(q||b)h+=crow(x.name,q,n)});
 if(!gs)h+='<div class="cr"><span><small>Noch keine Budgets eingetragen</small></span></div>';
 h+=ctot("Summe der Budgets",gs);
 if(S.abzuege.length){h+="<h4>Abzüge vom Festpreis</h4>";S.abzuege.forEach(function(a){h+=crow(a.name,-a.betrag,a.geschaetzt?"geschätzt":"fest")})}
 var bm=S.bem.filter(function(b){return b.status==="auf"||b.status==="ab"});
 if(bm.length){h+="<h4>Bemusterung</h4>";bm.forEach(function(b){h+=crow(b.name,b.status==="auf"?b.betrag:-b.betrag,b.status==="auf"?"Aufpreis":"Ersparnis")})}
-h+='<div style="height:6px"></div>'+ctot("Prognose",st.prog)+"<small>Budgets − Abzüge + Aufpreise − Einsparungen</small>"}
+h+='<div style="height:6px"></div>'+ctot("Prognose",st.prog)+"<small>Budgets (bei abgerechneten Gewerken die Rechnungen) − Abzüge + Aufpreise − Einsparungen</small>"}
 F.innerHTML="<h3>"+t+"</h3>"+h+'<div class="btns"><button type="button" class="pri" id="fc">Schließen</button></div>';
 F.onsubmit=function(ev){ev.preventDefault();D.close()};document.getElementById("fc").onclick=function(){D.close()};if(!D.open)D.showModal()}
 function exp(){var b=new Blob([JSON.stringify(S,null,1)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="baubudget-"+today()+".json";document.body.appendChild(a);a.click();a.remove()}

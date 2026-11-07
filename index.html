@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Baubudget</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-512.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Baubudget">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#2563eb">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f6f7f9;--card:#fff;--text:#1d232b;--muted:#6b7480;--line:#e3e6ea;--accent:#2563eb;--onacc:#fff;--ok:#16a34a;--warn:#d97706;--bad:#dc2626;--field:#e8f0fe;--item:#eef2f8;--itemline:#c9d4e4}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#12151a;--card:#1b2027;--text:#e8ebef;--muted:#98a1ad;--line:#2a313a;--accent:#60a5fa;--onacc:#0b1220;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171;--field:#2a3547;--item:#262f3c;--itemline:#394659}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#12151a;--card:#1b2027;--text:#e8ebef;--muted:#98a1ad;--line:#2a313a;--accent:#60a5fa;--onacc:#0b1220;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171;--field:#2a3547;--item:#262f3c;--itemline:#394659}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+button{cursor:pointer;font-family:inherit;touch-action:manipulation}
+button:focus-visible,input:focus-visible,select:focus-visible,.li:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:560px;margin:0 auto;padding:16px 16px 96px}
+h2{font-size:1.3rem;margin:0}
+.hd{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.sum,.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.card h2{font-size:1rem;margin-bottom:4px}
+.sum .row{display:flex;justify-content:space-between;gap:8px;text-align:center}
+.sum small,.card small,.li small{display:block;color:var(--muted);font-size:.8rem}
+.sum b{font-size:1.15rem}
+.neg{color:var(--bad)}
+.n{text-align:center;margin-top:8px}
+.bar{display:flex;height:8px;background:var(--line);border-radius:99px;margin-top:10px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ok);transition:width .3s}
+.bar i.w{background:var(--warn)}
+.bar.over i{background:var(--bad)}
+.hint{color:var(--muted);font-size:.9rem;margin:0 0 12px}
+.hint.bad{color:var(--bad)}
+.it{margin-top:12px}
+.it .top{display:flex;justify-content:space-between;gap:8px}
+.it .top span{color:var(--muted);font-size:.9rem;white-space:nowrap}
+.li{display:flex;align-items:center;gap:10px;width:100%;background:var(--item);border:1px solid var(--itemline);border-radius:12px;padding:10px 12px;margin-top:8px;cursor:pointer}
+.li .m{flex:1;min-width:0}
+.li .m b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.li .m small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.li .a{font-weight:600;white-space:nowrap}
+.chk{flex:none;width:34px;height:34px;border-radius:50%;border:2px solid var(--itemline);background:var(--card);color:var(--onacc);font-size:1rem;line-height:1;padding:0}
+.chk.on{background:var(--ok);border-color:var(--ok)}
+.tabs{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
+.tabs button{flex:1;background:none;border:0;color:var(--muted);padding:14px 2px;font-size:.78rem}
+.tabs button.on{color:var(--accent);font-weight:700}
+.pri{background:var(--accent)!important;color:var(--onacc)!important;border-color:var(--accent)!important}
+.hd .pri,.card .pri{border:0;border-radius:10px;padding:10px 14px;font-size:.95rem}
+.btn{width:100%;margin-top:8px;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:1rem}
+.top{display:flex;justify-content:space-between;gap:8px;margin-bottom:4px}
+.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--text);padding:16px;width:min(92vw,440px)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog h3{margin:0 0 4px}
+label{display:block;font-size:.85rem;color:var(--muted);margin-top:10px}
+input,select{display:block;width:100%;margin-top:4px;padding:12px;font:16px system-ui,sans-serif;background:var(--field);border:1px solid var(--line);border-radius:10px;color:var(--text)}
+input.err{border-color:var(--bad)}
+.btns{display:flex;gap:8px;margin-top:16px}
+.btns button{flex:1;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:1rem}
+.btns .del{color:var(--bad)}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<nav class="tabs">
+<button data-a="tab" data-v="ue">Übersicht</button>
+<button data-a="tab" data-v="re">Rechnungen</button>
+<button data-a="tab" data-v="be">Bemusterung</button>
+<button data-a="tab" data-v="ge">Gewerke</button>
+<button data-a="tab" data-v="to">Töpfe</button>
+</nav>
+<dialog id="dlg"><form id="f" autocomplete="off"></form></dialog>
+<input type="file" id="imp" accept="application/json,.json" hidden>
+<script>
+var K="baubudget-v1",A=document.getElementById("app"),D=document.getElementById("dlg"),F=document.getElementById("f"),tab="ue",S=load();
+function def(){return{toepfe:[{id:"t1",name:"Bankdarlehen",rahmen:0},{id:"t2",name:"KfW-Darlehen",rahmen:0},{id:"t3",name:"Eigenkapital",rahmen:0}],
+gewerke:["Fertighaus SchreyoeggBau (Festpreis)","Grundstück","Nebenkosten (Notar, Steuer)","Planung und Statik","Erdarbeiten","Rohbau","Dach","Fenster und Türen","Elektro","Fliesen","Küche (extern)","Bodenbeläge (Eigenleistung)","Sanitär und Heizung","Innenausbau","Außenanlagen","Unvorhergesehenes"].map(function(n,i){return{id:"g"+i,name:n,budget:0}}),rechnungen:[],optionen:[],abzuege:[]}}
+function load(){try{var j=localStorage.getItem(K);if(j)return mig(JSON.parse(j))}catch(x){}return def()}
+function save(){try{localStorage.setItem(K,JSON.stringify(S))}catch(x){}}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5)}
+function today(){return new Date().toLocaleDateString("sv-SE")}
+function dt(d){return d.split("-").reverse().join(".")}
+function e(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function eur(n,d){return new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",minimumFractionDigits:d||0,maximumFractionDigits:d||0}).format(n)}
+function num(s){s=String(s).trim().replace(/\s|€/g,"");if(!s)return NaN;if(s.indexOf(",")>-1)s=s.replace(/\./g,"").replace(",",".");else if(/^\d{1,3}(\.\d{3})+$/.test(s))s=s.replace(/\./g,"");return Number(s)}
+function fm(n){return String(n).replace(".",",")}
+function nm(l,id){for(var i=0;i<l.length;i++)if(l[i].id===id)return l[i].name;return""}
+function get(l,id){return l.filter(function(x){return x.id===id})[0]}
+function stats(){var st={rahmen:0,budget:0,bez:0,off:0,t:{},g:{}};
+S.toepfe.forEach(function(t){st.rahmen+=t.rahmen;st.t[t.id]={bez:0,off:0}});
+S.gewerke.forEach(function(g){st.budget+=g.budget;st.g[g.id]={bez:0,off:0}});
+S.rechnungen.forEach(function(r){var k=r.status==="bezahlt"?"bez":"off";st[k]+=r.betrag;if(st.t[r.topf])st.t[r.topf][k]+=r.betrag;if(st.g[r.gewerk])st.g[r.gewerk][k]+=r.betrag});
+st.prog=0;S.gewerke.forEach(function(g){st.prog+=plan(g)});S.abzuege.forEach(function(a){st.prog-=a.betrag});
+return st}
+function bar(b,o,max){var p1=0,p2=0,u=b+o;if(max>0){p1=Math.min(100,b/max*100);p2=Math.min(100-p1,o/max*100)}else if(u>0)p1=100;
+return'<div class="bar'+(u>max&&u>0?" over":"")+'"><i style="width:'+p1+'%"></i><i class="w" style="width:'+p2+'%"></i></div>'}
+function item(n,r,x,b){return'<div class="it"><div class="top"><b>'+e(n)+"</b><span>"+r+"</span></div>"+b+"<small>"+x+"</small></div>"}
+function vUe(st){var used=st.bez+st.off,frei=st.rahmen-used,h='<div class="hd"><h2>Übersicht</h2></div><div class="sum"><div class="row"><div><small>Rahmen</small><b>'+eur(st.rahmen)+"</b></div><div><small>Ausgegeben</small><b>"+eur(used)+'</b></div><div><small>Frei</small><b class="'+(frei<0?"neg":"")+'">'+eur(frei)+"</b></div></div>"+bar(st.bez,st.off,st.rahmen)+'<small class="n">Bezahlt '+eur(st.bez)+" · Offen "+eur(st.off)+"</small></div>";
+if(!st.rahmen)h+='<p class="hint">Trage unter „Töpfe“ den Rahmen von Bank und KfW ein.</p>';
+else h+='<p class="hint'+(st.prog>st.rahmen?" bad":"")+'">Prognose '+eur(st.prog)+(st.prog>st.rahmen?": "+eur(st.prog-st.rahmen)+" über dem Rahmen.":": "+eur(st.rahmen-st.prog)+" Spielraum.")+"</p>";
+h+='<div class="card"><h2>Töpfe</h2>';
+S.toepfe.forEach(function(t){var x=st.t[t.id],u=x.bez+x.off;h+=item(t.name,eur(u)+" von "+eur(t.rahmen),"Frei "+eur(t.rahmen-u),bar(x.bez,x.off,t.rahmen))});
+h+='</div><div class="card"><h2>Gewerke</h2>';var c=0;
+S.gewerke.forEach(function(g){var x=st.g[g.id],u=x.bez+x.off;if(!g.budget&&!u)return;c++;h+=item(g.name,eur(u)+" von "+eur(g.budget),"Frei "+eur(g.budget-u),bar(x.bez,x.off,g.budget))});
+if(!c)h+='<p class="hint">Lege unter „Gewerke“ Budgets fest oder erfasse Rechnungen.</p>';
+return h+"</div>"}
+function vRe(){var l=S.rechnungen.slice().sort(function(a,b){return b.datum.localeCompare(a.datum)}),h='<div class="hd"><h2>Rechnungen</h2><button class="pri" data-a="add-r">+ Rechnung</button></div>';
+if(!l.length)h+='<p class="hint">Noch keine Rechnungen. Tippe auf „+ Rechnung“, um die erste zu erfassen.</p>';
+l.forEach(function(r){var t=nm(S.toepfe,r.topf),ok=r.status==="bezahlt";
+h+='<div class="li" tabindex="0" role="button" data-a="edit-r" data-id="'+r.id+'"><button class="chk'+(ok?" on":"")+'" data-a="tog" data-id="'+r.id+'" aria-label="'+(ok?"Als offen markieren":"Als bezahlt markieren")+'">'+(ok?"✓":"")+'</button><div class="m"><b>'+e(nm(S.gewerke,r.gewerk)||"Ohne Gewerk")+"</b><small>"+dt(r.datum)+(t?" · "+e(t):"")+(r.notiz?" · "+e(r.notiz):"")+'</small></div><span class="a">'+eur(r.betrag,2)+"</span></div>"});
+return h}
+function vGe(st){var h='<div class="hd"><h2>Gewerke</h2><button class="pri" data-a="add-g">+ Gewerk</button></div><p class="hint">Verteilt: '+eur(st.budget)+" von "+eur(st.rahmen)+" Rahmen</p>";
+S.gewerke.forEach(function(g){var x=st.g[g.id];h+='<div class="li" tabindex="0" role="button" data-a="edit-g" data-id="'+g.id+'"><div class="m"><b>'+e(g.name)+"</b><small>Ausgegeben "+eur(x.bez+x.off)+'</small></div><span class="a">'+eur(g.budget)+"</span></div>"});
+return h}
+function vTo(st){var h='<div class="hd"><h2>Töpfe</h2><button class="pri" data-a="add-t">+ Topf</button></div><p class="hint">Rahmen der Darlehen und dein Eigenkapital.</p>';
+S.toepfe.forEach(function(t){var x=st.t[t.id];h+='<div class="li" tabindex="0" role="button" data-a="edit-t" data-id="'+t.id+'"><div class="m"><b>'+e(t.name)+"</b><small>Genutzt "+eur(x.bez+x.off)+'</small></div><span class="a">'+eur(t.rahmen)+"</span></div>"});
+return h+'<div class="card" style="margin-top:16px"><h2>Datensicherung</h2><small>Die Daten liegen nur auf diesem Gerät. Sichere sie regelmäßig.</small><button class="btn" data-a="exp">Daten exportieren</button><button class="btn" data-a="imp">Daten importieren</button></div>'}
+function render(){var st=stats();A.innerHTML=tab==="ue"?vUe(st):tab==="re"?vRe():tab==="be"?vBe(st):tab==="ge"?vGe(st):vTo(st);
+document.querySelectorAll(".tabs button").forEach(function(b){b.classList.toggle("on",b.dataset.v===tab)})}
+function openForm(title,fs,v,ok,del){var h="<h3>"+title+"</h3>";
+fs.forEach(function(f){h+="<label>"+f.l;
+if(f.t==="select")h+='<select name="'+f.k+'">'+f.o.map(function(o){return'<option value="'+e(o[0])+'"'+(o[0]===v[f.k]?" selected":"")+">"+e(o[1])+"</option>"}).join("")+"</select>";
+else h+='<input name="'+f.k+'" type="'+(f.t==="date"?"date":"text")+'"'+(f.t==="money"?' inputmode="decimal"':"")+' value="'+e(v[f.k])+'">';
+h+="</label>"});
+h+='<div class="btns">'+(del?'<button type="button" class="del" id="fd">Löschen</button>':"")+'<button type="button" id="fc">Abbrechen</button><button type="submit" class="pri">Speichern</button></div>';
+F.innerHTML=h;
+F.onsubmit=function(ev){ev.preventDefault();var o={};fs.forEach(function(f){o[f.k]=F.elements[f.k].value});
+if(ok(o)===false){fs.forEach(function(f){var el=F.elements[f.k];if(f.t==="money"||f.k==="name"||f.t==="date")el.classList.toggle("err",f.t==="money"?isNaN(num(o[f.k])):!o[f.k].trim())});return}
+save();D.close();render()};
+document.getElementById("fc").onclick=function(){D.close()};
+if(del)document.getElementById("fd").onclick=function(){if(confirm("Wirklich löschen?")){del();save();D.close();render()}};
+D.showModal()}
+function fRe(r){var n=!r;r=r||{datum:today(),gewerk:"",topf:"",betrag:"",status:"offen",notiz:""};
+var og=[["","—"]].concat(S.gewerke.map(function(g){return[g.id,g.name]})),ot=[["","—"]].concat(S.toepfe.map(function(t){return[t.id,t.name]}));
+openForm(n?"Neue Rechnung":"Rechnung bearbeiten",[{k:"datum",l:"Datum",t:"date"},{k:"gewerk",l:"Gewerk",t:"select",o:og},{k:"betrag",l:"Betrag in €",t:"money"},{k:"topf",l:"Aus Topf",t:"select",o:ot},{k:"status",l:"Status",t:"select",o:[["offen","Offen"],["bezahlt","Bezahlt"]]},{k:"notiz",l:"Notiz"}],
+{datum:r.datum,gewerk:r.gewerk,topf:r.topf,betrag:r.betrag===""?"":fm(r.betrag),status:r.status,notiz:r.notiz},
+function(v){var b=num(v.betrag);if(isNaN(b)||!v.datum)return false;var d={datum:v.datum,gewerk:v.gewerk,topf:v.topf,betrag:b,status:v.status,notiz:v.notiz.trim()};
+if(n){d.id=uid();S.rechnungen.push(d)}else Object.assign(r,d)},
+n?null:function(){S.rechnungen=S.rechnungen.filter(function(x){return x!==r})})}
+function fNV(list,it,k,t1,t2,lbl){var n=!it,v={name:n?"":it.name};v[k]=n?"":fm(it[k]);
+openForm(n?t1:t2,[{k:"name",l:"Name"},{k:k,l:lbl,t:"money"}],v,function(o){var m=num(o[k]);if(!o.name.trim()||isNaN(m))return false;
+if(n){var x={id:uid(),name:o.name.trim()};x[k]=m;S[list].push(x)}else{it.name=o.name.trim();it[k]=m}},
+n?null:function(){S[list]=S[list].filter(function(x){return x!==it})})}
+function mig(o){if(!o.optionen){o.optionen=[];o.abzuege=[];["Fertighaus SchreyoeggBau (Festpreis)","Fliesen","Küche (extern)","Bodenbeläge (Eigenleistung)"].forEach(function(n){if(!o.gewerke.some(function(g){return g.name===n}))o.gewerke.push({id:uid(),name:n,budget:0})})}return o}
+function chosen(g){return S.optionen.filter(function(o){return o.gewerk===g.id&&o.gewaehlt})[0]}
+function plan(g){var c=chosen(g);return c?c.preis:g.budget}
+function amp(p,b){return p>b?"bad":p>b*.9?"warn":"ok"}
+function vBe(st){var rest=st.rahmen-st.prog,h='<div class="hd"><h2>Bemusterung</h2><button class="pri" data-a="add-o">+ Variante</button></div><div class="sum"><div class="row"><div><small>Prognose</small><b>'+eur(st.prog)+'</b></div><div><small>Rahmen</small><b>'+eur(st.rahmen)+'</b></div><div><small>Spielraum</small><b class="'+(rest<0?"neg":"")+'">'+eur(rest)+'</b></div></div><small class="n">Gewählte Varianten zählen mit ihrem Preis, alle anderen Gewerke mit ihrem Budget.</small></div>',c=0;
+S.gewerke.forEach(function(g){var os=S.optionen.filter(function(o){return o.gewerk===g.id});if(!os.length)return;c++;var ch=chosen(g);
+h+='<div class="card"><div class="top"><b>'+e(g.name)+'</b><span class="'+(ch?amp(ch.preis,g.budget):"")+'">'+(ch?eur(ch.preis):"offen")+" von "+eur(g.budget)+"</span></div>";
+os.forEach(function(o){var on=o.gewaehlt,d=o.preis-g.budget;h+='<div class="li" tabindex="0" role="button" data-a="edit-o" data-id="'+o.id+'"><button class="chk'+(on?" on":"")+'" data-a="pick" data-id="'+o.id+'" aria-label="Variante wählen">'+(on?"✓":"")+'</button><div class="m"><b>'+e(o.name)+"</b><small>"+eur(Math.abs(d))+(d>0?" über Budget":" unter Budget")+'</small></div><span class="a">'+eur(o.preis)+"</span></div>"});
+h+="</div>"});
+if(!c)h+='<p class="hint">Lege pro Gewerk Varianten an (z. B. Fliese A und Fliese B) und wähle deine Favoriten.</p>';
+h+='<div class="card"><h2>Abzüge vom Festpreis</h2><small>Herausgenommene Leistungen, z. B. Fliesen und Elektrik. Steht der Betrag noch nicht fest, schätze ihn und markiere ihn als geschätzt.</small>';
+S.abzuege.forEach(function(a){h+='<div class="li" tabindex="0" role="button" data-a="edit-a" data-id="'+a.id+'"><div class="m"><b>'+e(a.name)+"</b><small>"+(a.geschaetzt?"geschätzt":"fest")+'</small></div><span class="a">−'+eur(a.betrag)+"</span></div>"});
+return h+'<button class="btn" data-a="add-a">+ Abzug</button></div>'}
+function fO(o){var n=!o;o=o||{gewerk:(S.gewerke[0]||{}).id||"",name:"",preis:""};
+openForm(n?"Neue Variante":"Variante bearbeiten",[{k:"gewerk",l:"Gewerk",t:"select",o:S.gewerke.map(function(g){return[g.id,g.name]})},{k:"name",l:"Bezeichnung"},{k:"preis",l:"Preis in € (bei Aufpreis nur der Aufpreis)",t:"money"}],{gewerk:o.gewerk,name:o.name,preis:n?"":fm(o.preis)},
+function(v){var m=num(v.preis);if(!v.name.trim()||isNaN(m)||!v.gewerk)return false;var d={gewerk:v.gewerk,name:v.name.trim(),preis:m};
+if(n){d.id=uid();d.gewaehlt=false;S.optionen.push(d)}else Object.assign(o,d)},
+n?null:function(){S.optionen=S.optionen.filter(function(x){return x!==o})})}
+function fA(a){var n=!a;a=a||{name:"",betrag:"",geschaetzt:true};
+openForm(n?"Neuer Abzug":"Abzug bearbeiten",[{k:"name",l:"Leistung (z. B. Elektrik)"},{k:"betrag",l:"Minderung in €",t:"money"},{k:"geschaetzt",l:"Betrag",t:"select",o:[["1","geschätzt"],["0","fest"]]}],{name:a.name,betrag:n?"":fm(a.betrag),geschaetzt:a.geschaetzt?"1":"0"},
+function(v){var m=num(v.betrag);if(!v.name.trim()||isNaN(m))return false;var d={name:v.name.trim(),betrag:m,geschaetzt:v.geschaetzt==="1"};
+if(n){d.id=uid();S.abzuege.push(d)}else Object.assign(a,d)},
+n?null:function(){S.abzuege=S.abzuege.filter(function(x){return x!==a})})}
+function exp(){var b=new Blob([JSON.stringify(S,null,1)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="baubudget-"+today()+".json";document.body.appendChild(a);a.click();a.remove()}
+document.getElementById("imp").onchange=function(ev){var f=ev.target.files[0];if(!f)return;var r=new FileReader();
+r.onload=function(){try{var o=JSON.parse(r.result);if(!Array.isArray(o.toepfe)||!Array.isArray(o.gewerke)||!Array.isArray(o.rechnungen))throw 0;
+if(confirm("Die aktuellen Daten werden ersetzt. Fortfahren?")){S=mig(o);save();render()}}catch(x){alert("Die Datei ist keine gültige Baubudget-Sicherung.")}ev.target.value=""};r.readAsText(f)};
+document.addEventListener("click",function(ev){var b=ev.target.closest("[data-a]");if(!b)return;var a=b.dataset.a,id=b.dataset.id;
+if(a==="tab"){tab=b.dataset.v;render();window.scrollTo(0,0)}
+else if(a==="tog"){var r=get(S.rechnungen,id);r.status=r.status==="bezahlt"?"offen":"bezahlt";save();render()}
+else if(a==="add-r")fRe();
+else if(a==="edit-r")fRe(get(S.rechnungen,id));
+else if(a==="add-g")fNV("gewerke",null,"budget","Neues Gewerk","","Budget in €");
+else if(a==="edit-g")fNV("gewerke",get(S.gewerke,id),"budget","","Gewerk bearbeiten","Budget in €");
+else if(a==="add-t")fNV("toepfe",null,"rahmen","Neuer Topf","","Rahmen in €");
+else if(a==="edit-t")fNV("toepfe",get(S.toepfe,id),"rahmen","","Topf bearbeiten","Rahmen in €");
+else if(a==="pick"){var o=get(S.optionen,id);S.optionen.forEach(function(x){if(x.gewerk===o.gewerk)x.gewaehlt=x===o?!x.gewaehlt:false});save();render()}
+else if(a==="add-o")fO();
+else if(a==="edit-o")fO(get(S.optionen,id));
+else if(a==="add-a")fA();
+else if(a==="edit-a")fA(get(S.abzuege,id));
+else if(a==="exp")exp();
+else if(a==="imp")document.getElementById("imp").click()});
+document.addEventListener("keydown",function(ev){if(ev.key==="Enter"&&ev.target.classList&&ev.target.classList.contains("li"))ev.target.click()});
+render();
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(x){}
+try{if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js")}catch(x){}
+</script>
+</body>
+</html>

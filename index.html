@@ -63,6 +63,17 @@ h2{font-size:1.3rem;margin:0}
 .seg button.on{border-color:var(--accent);background:var(--field)}
 .seg button.on.auf{border-color:var(--warn)}.seg button.on.ab{border-color:var(--ok)}
 .top b[data-a]{cursor:pointer}
+.kpi{flex:1;background:none;border:0;color:inherit;font:inherit;padding:6px 4px;border-radius:10px;text-align:center}
+.kpi:active{background:var(--item)}
+.kpi b{border-bottom:1px dashed var(--muted)}
+.lnk{display:block;margin:6px auto 0;background:none;border:0;color:var(--accent);font-size:.9rem;text-decoration:underline}
+.cr{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid var(--line)}
+.cr small{display:block;color:var(--muted);font-size:.78rem}
+.cr b{white-space:nowrap;font-weight:600}
+.cr.tot{border-bottom:0;border-top:2px solid var(--text);margin-top:4px}
+.cr.tot b{font-weight:800}
+dialog{max-height:85vh}
+dialog h4{margin:14px 0 2px;font-size:.9rem;color:var(--muted)}
 .ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}
 dialog{border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--text);padding:16px;width:min(92vw,440px)}
 dialog::backdrop{background:rgba(0,0,0,.45)}
@@ -112,9 +123,9 @@ return st}
 function bar(b,o,max){var p1=0,p2=0,u=b+o;if(max>0){p1=Math.min(100,b/max*100);p2=Math.min(100-p1,o/max*100)}else if(u>0)p1=100;
 return'<div class="bar'+(u>max&&u>0?" over":"")+'"><i style="width:'+p1+'%"></i><i class="w" style="width:'+p2+'%"></i></div>'}
 function item(n,r,x,b){return'<div class="it"><div class="top"><b>'+e(n)+"</b><span>"+r+"</span></div>"+b+"<small>"+x+"</small></div>"}
-function vUe(st){var used=st.bez+st.off,frei=st.rahmen-used,h='<div class="hd"><h2>Übersicht</h2></div><div class="sum"><div class="row"><div><small>Rahmen</small><b>'+eur(st.rahmen)+"</b></div><div><small>Ausgegeben</small><b>"+eur(used)+'</b></div><div><small>Frei</small><b class="'+(frei<0?"neg":"")+'">'+eur(frei)+"</b></div></div>"+bar(st.bez,st.off,st.rahmen)+'<small class="n">Bezahlt '+eur(st.bez)+" · Offen "+eur(st.off)+"</small></div>";
+function vUe(st){var used=st.bez+st.off,frei=st.rahmen-used,h='<div class="hd"><h2>Übersicht</h2></div><div class="sum"><div class="row"><button class="kpi" data-a="calc" data-v="rahmen"><small>Rahmen</small><b>'+eur(st.rahmen)+'</b></button><button class="kpi" data-a="calc" data-v="aus"><small>Ausgegeben</small><b>'+eur(used)+'</b></button><button class="kpi" data-a="calc" data-v="frei"><small>Frei</small><b class="'+(frei<0?"neg":"")+'">'+eur(frei)+"</b></button></div>"+bar(st.bez,st.off,st.rahmen)+'<small class="n">Bezahlt '+eur(st.bez)+" · Offen "+eur(st.off)+"</small></div>";
 if(!st.rahmen)h+='<p class="hint">Trage unter „Töpfe“ den Rahmen von Bank und KfW ein.</p>';
-else h+='<p class="hint'+(st.prog>st.rahmen?" bad":"")+'">Prognose '+eur(st.prog)+(st.prog>st.rahmen?": "+eur(st.prog-st.rahmen)+" über dem Rahmen.":": "+eur(st.rahmen-st.prog)+" Spielraum.")+"</p>";
+else h+='<div class="sum"><div class="row"><button class="kpi" data-a="calc" data-v="prog"><small>Prognose (geplante Gesamtkosten)</small><b>'+eur(st.prog)+'</b></button><button class="kpi" data-a="calc" data-v="spiel"><small>Spielraum</small><b class="'+(st.prog>st.rahmen?"neg":"")+'">'+eur(st.rahmen-st.prog)+'</b></button></div><small class="n">Tippe auf einen Betrag, um den Rechenweg zu sehen.</small></div>';
 h+=bemLine(st);h+='<div class="card"><h2>Töpfe</h2>';
 S.toepfe.forEach(function(t){var x=st.t[t.id],u=x.bez+x.off;h+=item(t.name,eur(u)+" von "+eur(t.rahmen),"Frei "+eur(t.rahmen-u),bar(x.bez,x.off,t.rahmen))});
 h+='</div><div class="card"><h2>Gewerke</h2>';var c=0;
@@ -166,7 +177,7 @@ function defBem(){return["Badezimmer: Armaturen","Badezimmer: Sanitärobjekte un
 function bval(b){return b.status==="auf"?"+"+eur(b.betrag):b.status==="ab"?"−"+eur(b.betrag):b.status==="standard"?"Standard":"offen"}
 function bcls(b){return b.status==="auf"?"warn":b.status==="ab"?"ok":""}
 function bemLine(st){return'<p class="hint">Bemusterung: +'+eur(st.auf)+" Aufpreise, −"+eur(st.ab)+" Einsparungen, "+st.offen+" von "+S.bem.length+" Positionen offen.</p>"}
-function bsum(st){var net=st.auf-st.ab;return'<div class="row"><div><small>Aufpreise</small><b>+'+eur(st.auf)+"</b></div><div><small>Einsparungen</small><b>−"+eur(st.ab)+'</b></div><div><small>Saldo</small><b class="'+(net>0?"neg":"ok")+'">'+(net>0?"+":net<0?"−":"")+eur(Math.abs(net))+'</b></div></div><small class="n">'+st.offen+" von "+S.bem.length+" Positionen offen"+(st.rahmen?" · Spielraum insgesamt "+eur(st.rahmen-st.prog):"")+"</small>"}
+function bsum(st){var net=st.auf-st.ab;return'<div class="row"><div><small>Aufpreise</small><b>+'+eur(st.auf)+"</b></div><div><small>Einsparungen</small><b>−"+eur(st.ab)+'</b></div><div><small>Saldo</small><b class="'+(net>0?"neg":"ok")+'">'+(net>0?"+":net<0?"−":"")+eur(Math.abs(net))+'</b></div></div><small class="n">'+st.offen+" von "+S.bem.length+" Positionen offen"+(st.rahmen?" · Spielraum insgesamt "+eur(st.rahmen-st.prog):"")+"</small>"+(st.rahmen?'<button type="button" class="lnk" data-a="calc" data-v="spiel">Rechenweg zum Spielraum</button>':"")}
 function updBem(id){var b=get(S.bem,id),x=document.getElementById("bs"),v=document.getElementById("bv"+id);if(x)x.innerHTML=bsum(stats());if(v){v.textContent=bval(b);v.className=bcls(b)}}
 function vBe(st){var h='<div class="hd"><h2>Bemusterung</h2><button class="pri" data-a="add-b">+ Position</button></div><div class="sum" id="bs">'+bsum(st)+'</div><p class="hint">Wähle pro Position: Standard, aufbemustert (Aufpreis) oder abbemustert (Ersparnis). Bei Fliesen und Elektrik gilt die Differenz zu eurem geplanten Budget.</p>';
 S.bem.forEach(function(b){var m=b.status==="auf"||b.status==="ab";
@@ -190,6 +201,25 @@ openForm(n?"Neuer Abzug":"Abzug bearbeiten",[{k:"name",l:"Leistung (z. B. Elektr
 function(v){var m=num(v.betrag);if(!v.name.trim()||isNaN(m))return false;var d={name:v.name.trim(),betrag:m,geschaetzt:v.geschaetzt==="1"};
 if(n){d.id=uid();S.abzuege.push(d)}else Object.assign(a,d)},
 n?null:function(){S.abzuege=S.abzuege.filter(function(x){return x!==a})})}
+function crow(l,v,n,pl){return'<div class="cr"><span>'+e(l)+(n?"<small>"+e(n)+"</small>":"")+"</span><b>"+(pl?"":v<0?"−":"+")+eur(Math.abs(v))+"</b></div>"}
+function ctot(l,v){return'<div class="cr tot"><span>'+e(l)+"</span><b>"+(v<0?"−":"")+eur(Math.abs(v))+"</b></div>"}
+function clink(t,k){return'<button type="button" class="lnk" data-a="calc" data-v="'+k+'">'+t+"</button>"}
+function calc(k){var st=stats(),h="",t="",used=st.bez+st.off,nb=S.rechnungen.filter(function(r){return r.status==="bezahlt"}).length;
+function tf(){S.toepfe.forEach(function(x){h+=crow(x.name,x.rahmen,"",1)});h+=ctot("Rahmen gesamt",st.rahmen)}
+if(k==="rahmen"){t="Rahmen";h+="<h4>Alle Töpfe zusammen</h4>";tf()}
+else if(k==="aus"){t="Ausgegeben";h+="<h4>Aus den Rechnungen</h4>"+crow("Bezahlt ("+nb+" Rechnungen)",st.bez,"",1)+crow("Offen ("+(S.rechnungen.length-nb)+" Rechnungen)",st.off,"",1)+ctot("Ausgegeben",used)}
+else if(k==="frei"){t="Frei";h+="<h4>Rahmen minus Rechnungen</h4>"+crow("Rahmen",st.rahmen,"",1)+crow("Ausgegeben (bezahlt und offen)",-used)+ctot("Frei",st.rahmen-used)+clink("Woraus besteht „Ausgegeben“?","aus")}
+else if(k==="spiel"){t="Spielraum";h+="<h4>Rahmen</h4>";tf();h+="<h4>Abzüglich Prognose</h4>"+crow("Prognose",-st.prog,"erwartete Gesamtkosten")+ctot("Spielraum",st.rahmen-st.prog)+"<small>Ist der Spielraum negativ, liegt die Planung über dem Rahmen.</small>"+clink("Rechenweg der Prognose","prog")}
+else{t="Prognose";var gs=0;h+="<h4>Budgets der Gewerke</h4>";
+S.gewerke.forEach(function(x){var q=plan(x);gs+=q;if(q)h+=crow(x.name,q)});
+if(!gs)h+='<div class="cr"><span><small>Noch keine Budgets eingetragen</small></span></div>';
+h+=ctot("Summe der Budgets",gs);
+if(S.abzuege.length){h+="<h4>Abzüge vom Festpreis</h4>";S.abzuege.forEach(function(a){h+=crow(a.name,-a.betrag,a.geschaetzt?"geschätzt":"fest")})}
+var bm=S.bem.filter(function(b){return b.status==="auf"||b.status==="ab"});
+if(bm.length){h+="<h4>Bemusterung</h4>";bm.forEach(function(b){h+=crow(b.name,b.status==="auf"?b.betrag:-b.betrag,b.status==="auf"?"Aufpreis":"Ersparnis")})}
+h+='<div style="height:6px"></div>'+ctot("Prognose",st.prog)+"<small>Budgets − Abzüge + Aufpreise − Einsparungen</small>"}
+F.innerHTML="<h3>"+t+"</h3>"+h+'<div class="btns"><button type="button" class="pri" id="fc">Schließen</button></div>';
+F.onsubmit=function(ev){ev.preventDefault();D.close()};document.getElementById("fc").onclick=function(){D.close()};if(!D.open)D.showModal()}
 function exp(){var b=new Blob([JSON.stringify(S,null,1)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="baubudget-"+today()+".json";document.body.appendChild(a);a.click();a.remove()}
 document.getElementById("imp").onchange=function(ev){var f=ev.target.files[0];if(!f)return;var r=new FileReader();
 r.onload=function(){try{var o=JSON.parse(r.result);if(!Array.isArray(o.toepfe)||!Array.isArray(o.gewerke)||!Array.isArray(o.rechnungen))throw 0;
@@ -203,6 +233,7 @@ else if(a==="add-g")fNV("gewerke",null,"budget","Neues Gewerk","","Budget in €
 else if(a==="edit-g")fNV("gewerke",get(S.gewerke,id),"budget","","Gewerk bearbeiten","Budget in €");
 else if(a==="add-t")fNV("toepfe",null,"rahmen","Neuer Topf","","Rahmen in €");
 else if(a==="edit-t")fNV("toepfe",get(S.toepfe,id),"rahmen","","Topf bearbeiten","Rahmen in €");
+else if(a==="calc")calc(b.dataset.v);
 else if(a==="bs"){get(S.bem,id).status=b.dataset.v;save();render()}
 else if(a==="add-b")fP();
 else if(a==="edit-b")fP(get(S.bem,id));

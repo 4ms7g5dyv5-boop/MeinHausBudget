@@ -90,6 +90,8 @@ h2{font-size:1.3rem;margin:0}
 .cr b{white-space:nowrap;font-weight:600}
 .cr.tot{border-bottom:0;border-top:2px solid var(--text);margin-top:4px}
 .cr.tot b{font-weight:800}
+.bem-stick{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);margin:0 -16px 10px;padding:6px 16px 4px;box-shadow:0 8px 12px -12px rgba(0,0,0,.55)}
+.bem-stick .sum{margin:0;padding:14px}
 dialog{max-height:85vh;max-height:min(85dvh,720px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 dialog h4{margin:14px 0 2px;font-size:.9rem;color:var(--muted)}
 .li.done{background:var(--okbg);border-color:var(--okline)}
@@ -185,12 +187,15 @@ input.err{border-color:var(--bad)}
   #app>.hd h2{font-size:26px;letter-spacing:-.7px}
   .sum,.card{border-radius:17px;padding:19px;margin-bottom:16px;box-shadow:0 5px 22px rgba(25,40,65,.035)}
   .sum b{font-size:1.35rem}
-  .stick{position:relative;top:auto;margin:0 0 18px;padding:0;background:transparent;box-shadow:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;z-index:1}
-  .stick .sum{margin:0;padding:20px}
-  .stick .sum b{font-size:1.4rem}
-  .stick .bar{height:12px;margin-top:14px}
-  .stick .fade{max-height:none;opacity:1;margin-top:9px}
-  .stick .kpi{padding:8px 5px}
+  .stick{position:sticky;top:0;margin:0 -8px 18px;padding:8px;background:var(--bg);box-shadow:0 8px 16px -14px rgba(0,0,0,.45);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;z-index:1}
+  .bem-stick{top:0;margin:0 0 14px;padding:0;background:var(--bg)}
+  .bem-stick .sum{padding:18px;margin:0}
+  .stick .sum{margin:0;padding:calc(20px - 9px*var(--p,0))}
+  .stick .sum b{font-size:calc(1.4rem - .3rem*var(--p,0))}
+  .stick .sum small{font-size:calc(.9rem - .12rem*var(--p,0))}
+  .stick .bar{height:calc(12px - 5px*var(--p,0));margin-top:calc(14px - 5px*var(--p,0))}
+  .stick .fade{max-height:calc(3em*(1 - var(--p,0)));opacity:max(0,calc(1 - var(--p,0)*2));margin-top:calc(9px*(1 - var(--p,0)))}
+  .stick .kpi{padding:calc(8px - 4px*var(--p,0)) 5px}
   .stick .sum:first-child{grid-column:span 1}
   .stick .sum:nth-child(2){grid-column:span 1}
   .it{padding:5px 0}
@@ -360,7 +365,7 @@ function bcls(b){return b.status==="auf"?"warn":b.status==="ab"?"ok":""}
 function bemLine(st){return'<p class="hint">Bemusterung: +'+eur(st.auf)+" Aufpreise, −"+eur(st.ab)+" Einsparungen, "+st.offen+" von "+S.bem.length+" Positionen offen.</p>"}
 function bsum(st){var net=st.auf-st.ab;return'<div class="row"><div><small>Aufpreise</small><b>+'+eur(st.auf)+"</b></div><div><small>Einsparungen</small><b>−"+eur(st.ab)+'</b></div><div><small>Saldo</small><b class="'+(net>0?"neg":"ok")+'">'+(net>0?"+":net<0?"−":"")+eur(Math.abs(net))+'</b></div></div><small class="n">'+st.offen+" von "+S.bem.length+" Positionen offen"+(st.rahmen?" · Spielraum insgesamt "+eur(st.rahmen-st.prog):"")+"</small>"+(st.rahmen?'<button type="button" class="lnk" data-a="calc" data-v="spiel">Rechenweg zum Spielraum</button>':"")}
 function updBem(id){var b=get(S.bem,id),x=document.getElementById("bs"),v=document.getElementById("bv"+id);if(x)x.innerHTML=bsum(stats());if(v){v.textContent=bval(b);v.className=bcls(b)}}
-function vBe(st){var h='<div class="hd"><h2>Bemusterung</h2><button class="pri" data-a="add-b">+ Position</button></div><div class="sum" id="bs">'+bsum(st)+'</div><p class="hint">Symbole: ○ offen · = Standard · ↑ aufbemustert (Aufpreis) · ↓ abbemustert (Ersparnis). Bei Fliesen und Elektrik gilt die Differenz zu eurem geplanten Budget.</p>';
+function vBe(st){var h='<div class="hd"><h2>Bemusterung</h2><button class="pri" data-a="add-b">+ Position</button></div><div class="bem-stick"><div class="sum" id="bs">'+bsum(st)+'</div></div><p class="hint">Symbole: ○ offen · = Standard · ↑ aufbemustert (Aufpreis) · ↓ abbemustert (Ersparnis). Bei Fliesen und Elektrik gilt die Differenz zu eurem geplanten Budget.</p>';
 S.bem.forEach(function(b){var m=b.status==="auf"||b.status==="ab";
 h+='<div class="card"><div class="top"><b data-a="edit-b" data-id="'+b.id+'">'+e(b.name)+'</b><span id="bv'+b.id+'" class="'+bcls(b)+'">'+bval(b)+'</span></div><div class="seg">';
 [["offen","Offen"],["standard","Standard"],["auf","Aufbemustert"],["ab","Abbemustert"]].forEach(function(o){h+='<button type="button" class="'+(b.status===o[0]?"on ":"")+o[0]+'" data-a="bs" data-id="'+b.id+'" data-v="'+o[0]+'" aria-label="'+o[1]+'" title="'+o[1]+'" aria-pressed="'+(b.status===o[0])+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+BI[o[0]]+"</svg></button>"});

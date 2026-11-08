@@ -161,9 +161,78 @@ input.err{border-color:var(--bad)}
 .btns{display:flex;gap:8px;margin-top:16px}
 .btns button{flex:1;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:1rem}
 .btns .del{color:var(--bad)}
+
+/* Desktop layout: separate workspace while preserving the complete mobile UI. */
+.desktop-sidebar{display:none}
+@media (min-width: 900px){
+  body{min-height:100vh;font-size:15px;background:radial-gradient(ellipse at 85% 0%,color-mix(in srgb,var(--accent) 7%,var(--bg)),var(--bg) 55%)}
+  .apphead{display:none}
+  .desktop-sidebar{position:fixed;inset:0 auto 0 0;width:252px;padding:28px 17px 22px;display:flex;flex-direction:column;gap:24px;background:color-mix(in srgb,var(--card) 88%,var(--bg));border-right:1px solid var(--line);backdrop-filter:blur(22px);z-index:30}
+  .ds-brand{display:flex;align-items:center;gap:12px;padding:2px 9px 18px;border-bottom:1px solid var(--line)}
+  .ds-coin{width:38px;height:38px;flex:none}
+  .ds-brand strong{font-size:16px;line-height:1.2;letter-spacing:-.3px}
+  .ds-brand small{display:block;color:var(--muted);font-size:11px;margin-top:3px}
+  .ds-label{padding:0 10px;color:var(--muted);font-size:10px;font-weight:750;letter-spacing:1.2px;text-transform:uppercase}
+  .ds-nav{display:grid;gap:6px}
+  .ds-nav button{width:100%;display:flex;align-items:center;gap:12px;padding:11px 12px;border:1px solid transparent;border-radius:12px;background:transparent;color:var(--muted);font-size:14px;font-weight:620;text-align:left;transition:background .16s,border-color .16s,color .16s}
+  .ds-nav button svg{width:19px;height:19px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .ds-nav button:hover{background:var(--item);color:var(--text)}
+  .ds-nav button.active{background:color-mix(in srgb,var(--accent) 11%,var(--card));border-color:color-mix(in srgb,var(--accent) 24%,var(--line));color:var(--accent)}
+  .ds-foot{margin-top:auto;padding:13px 11px;border:1px solid var(--line);border-radius:13px;color:var(--muted);font-size:11px;line-height:1.5}
+  main#app{max-width:none;width:auto;margin:0 0 0 252px;padding:34px clamp(26px,3.3vw,58px) 60px;min-height:100vh}
+  #app>*{max-width:1500px;margin-left:auto;margin-right:auto}
+  #app>.hd{margin-bottom:22px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+  #app>.hd h2{font-size:26px;letter-spacing:-.7px}
+  .sum,.card{border-radius:17px;padding:19px;margin-bottom:16px;box-shadow:0 5px 22px rgba(25,40,65,.035)}
+  .sum b{font-size:1.35rem}
+  .stick{position:relative;top:auto;margin:0 0 18px;padding:0;background:transparent;box-shadow:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;z-index:1}
+  .stick .sum{margin:0;padding:20px}
+  .stick .sum b{font-size:1.4rem}
+  .stick .bar{height:12px;margin-top:14px}
+  .stick .fade{max-height:none;opacity:1;margin-top:9px}
+  .stick .kpi{padding:8px 5px}
+  .stick .sum:first-child{grid-column:span 1}
+  .stick .sum:nth-child(2){grid-column:span 1}
+  .it{padding:5px 0}
+  .li{padding:13px 15px;margin-top:9px;border-radius:13px}
+  .li:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--itemline));background:color-mix(in srgb,var(--accent) 5%,var(--item))}
+  .btn,.hd .pri,.card .pri{font-size:.92rem}
+  .radial-menu,.nav-fab,.nav-scrim{display:none!important}
+  dialog{width:min(620px,70vw);padding:22px;border-radius:20px}
+  dialog h3{font-size:20px}
+  dialog label{margin-top:14px}
+  dialog input,dialog select{padding:13px}
+  .btns{justify-content:flex-end}
+  .btns button{flex:0 0 150px}
+  .legend{text-align:left;font-size:.75rem}
+  .fbar,.fb{max-width:100%}
+}
+@media (min-width: 1250px){
+  main#app{padding-left:clamp(40px,4vw,72px);padding-right:clamp(40px,4vw,72px)}
+  #app>.card{padding:22px}
+  .stick{gap:20px}
+}
+@media (min-width: 900px) and (max-height: 700px){
+  .desktop-sidebar{padding-top:18px;gap:15px}
+  main#app{padding-top:22px}
+}
+
 </style>
 </head>
 <body>
+<aside class="desktop-sidebar" aria-label="Desktop-Hauptnavigation">
+  <div class="ds-brand"><svg class="ds-coin" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="#f2b73a" stroke="#8a5a10" stroke-width="2"/><circle cx="24" cy="24" r="16.5" fill="none" stroke="#fff3c2" stroke-width="2"/><text x="24" y="32" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="800" font-size="22" fill="#7a4a08">€</text></svg><div><strong>Mein Haus Budget</strong><small>Deine Baufinanzen im Blick</small></div></div>
+  <div class="ds-label">Arbeitsbereich</div>
+  <nav class="ds-nav">
+    <button type="button" data-a="tab" data-v="ue" class="active"><svg viewBox="0 0 24 24"><rect x="3" y="3.5" width="18" height="17" rx="3"/><path d="M3.5 8.5h17M7 16l3-3 2.5 2 5-5"/></svg>Übersicht</button>
+    <button type="button" data-a="tab" data-v="to"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M16.5 7.5a5 5 0 0 0-3-1c-2.6 0-4.5 2.1-4.5 5.5s1.9 5.5 4.5 5.5a5 5 0 0 0 3-1M6.5 10.5h8M6.5 13.5h7"/></svg>Töpfe</button>
+    <button type="button" data-a="tab" data-v="ge"><svg viewBox="0 0 24 24"><path d="M14.5 6.5a4 4 0 0 0-5.2 5.2L4 17l3 3 5.3-5.3a4 4 0 0 0 5.2-5.2l-2.7 2.7-3-3 2.7-2.7Z"/></svg>Gewerke</button>
+    <button type="button" data-a="tab" data-v="be"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18h1.2a2.3 2.3 0 0 0 1.7-3.8 1.7 1.7 0 0 1 1.3-2.8H18a3 3 0 0 0 3-3A8.4 8.4 0 0 0 12 3Z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7.5" r="1"/><circle cx="14.5" cy="7.5" r="1"/><circle cx="17" cy="11" r="1"/></svg>Bemusterung</button>
+    <button type="button" data-a="tab" data-v="re"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><path d="M14 3v5h5M8 12h8M8 16h8"/></svg>Rechnungen</button>
+    <button type="button" data-a="tab" data-v="da"><svg viewBox="0 0 24 24"><path d="M12 16V4m-4 4 4-4 4 4M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>Datensicherung</button>
+  </nav>
+  <div class="ds-foot">Alle Bereiche greifen auf denselben Datenbestand zu. Änderungen werden wie gewohnt lokal auf diesem Gerät gespeichert.</div>
+</aside>
 <header class="apphead"><svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="cg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe9a0"/><stop offset=".5" stop-color="#f2b73a"/><stop offset="1" stop-color="#b9791a"/></linearGradient><symbol id="coin" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="url(#cg)" stroke="#8a5a10" stroke-width="2"/><circle cx="24" cy="24" r="16.5" fill="none" stroke="#fff3c2" stroke-opacity=".75" stroke-width="2"/><text x="24" y="32" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="800" font-size="22" fill="#7a4a08">€</text></symbol></defs></svg><svg class="coin l" aria-hidden="true"><use href="#coin"/></svg><h1>Mein Haus Budget</h1><svg class="coin r" aria-hidden="true"><use href="#coin"/></svg></header>
 <main id="app"></main>
 <div class="nav-scrim" id="navScrim" hidden></div>
@@ -255,7 +324,7 @@ function vTo(st){var h='<div class="hd"><h2>Töpfe</h2><button class="pri" data-
 S.toepfe.forEach(function(t){var x=st.t[t.id];h+='<div class="li" tabindex="0" role="button" data-a="edit-t" data-id="'+t.id+'"><div class="m"><b>'+e(t.name)+"</b><small>Genutzt "+eur(x.bez+x.off)+'</small></div><span class="a">'+eur(t.rahmen)+"</span></div>"});
 return h}
 function render(){var st=stats();A.innerHTML=tab==="ue"?vUe(st):tab==="re"?vRe():tab==="be"?vBe(st):tab==="da"?vDa():tab==="ge"?vGe(st):vTo(st);
-document.querySelectorAll(".radial-item").forEach(function(b){b.classList.toggle("active",b.dataset.v===tab)})}
+document.querySelectorAll(".radial-item,.ds-nav button").forEach(function(b){b.classList.toggle("active",b.dataset.v===tab)})}
 function openForm(title,fs,v,ok,del){var h="<h3>"+title+"</h3>";
 fs.forEach(function(f){if(f.t==="sw"){h+='<label class="sw"><span>'+f.l+'</span><input type="checkbox" name="'+f.k+'"'+(v[f.k]==="1"?" checked":"")+"><i></i></label>";return}h+="<label>"+f.l;
 if(f.t==="select")h+='<select name="'+f.k+'">'+f.o.map(function(o){return'<option value="'+e(o[0])+'"'+(o[0]===v[f.k]?" selected":"")+">"+e(o[1])+"</option>"}).join("")+"</select>";

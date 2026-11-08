@@ -41,7 +41,7 @@ h2{font-size:1.3rem;margin:0}
 .it .top{display:flex;justify-content:space-between;gap:8px}
 .it .top{align-items:center}
 .it .sub{margin-top:8px;margin-bottom:0}
-.it .sub span{color:var(--text);font-size:.95rem;font-weight:600}
+.it .sub span{color:var(--muted);font-size:.76rem;font-weight:400}
 .chip{flex:none;font-size:.8rem;font-weight:700;padding:3px 10px;border-radius:99px;white-space:nowrap;border:1px solid transparent}
 .chip.ok{background:var(--okbg);color:var(--oktx);border-color:var(--okline)}
 .chip.warn{background:var(--wbg);color:var(--wtx);border-color:var(--wline)}
@@ -101,6 +101,14 @@ html{-webkit-text-size-adjust:100%}
 .li .a{font-size:1rem;font-weight:700}
 .sum b{font-size:1.25rem;font-weight:800}
 dialog h3{font-size:1.3rem;margin-bottom:8px}
+.it .sub b{font-size:inherit;font-weight:500}
+.fold{display:flex;align-items:center;gap:8px;width:100%;min-height:40px;background:none;border:0;padding:0;color:inherit;font:inherit;text-align:left}
+.fold .fs{display:none;margin-left:auto;font-size:.85rem;font-weight:400;color:var(--muted)}
+.chev{flex:none;width:10px;height:10px;margin:-4px 4px 0 auto;border-right:2.5px solid var(--muted);border-bottom:2.5px solid var(--muted);transform:rotate(45deg);transition:transform .2s}
+.card.closed .fs{display:inline}
+.card.closed .chev{margin-left:0;margin-top:0;transform:rotate(-45deg)}
+.card.closed h2{border-bottom:0;margin-bottom:0;padding-bottom:0}
+.card.closed>:not(h2){display:none}
 .ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}
 dialog{border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--text);padding:16px;width:min(92vw,440px)}
 dialog::backdrop{background:rgba(0,0,0,.45)}
@@ -150,15 +158,16 @@ return st}
 function bar(b,o,max){var p1=0,p2=0,u=b+o;if(max>0){p1=Math.min(100,b/max*100);p2=Math.min(100-p1,o/max*100)}else if(u>0)p1=100;
 return'<div class="bar'+(u>max&&u>0?" over":"")+'"><i style="width:'+p1+'%"></i><i class="w" style="width:'+p2+'%"></i></div>'}
 function gbar(b,o,max){var u=b+o,f=max>0?u/max:(u>0?1:0),c="hsl("+Math.round(120*(1-Math.min(1,f)))+",70%,42%)",p1=max>0?Math.min(100,b/max*100):(u>0?100:0),p2=max>0?Math.min(100-p1,o/max*100):0;return'<div class="bar big"><i style="width:'+p1+"%;background:"+c+'"></i><i style="width:'+p2+"%;background:"+c+';opacity:.5"></i></div>'}
+function fcard(k,t,sm){var c=S.ui&&S.ui[k];return'<div class="card'+(c?" closed":"")+'"><h2><button type="button" class="fold" data-a="fold" data-v="'+k+'" aria-expanded="'+(c?"false":"true")+'">'+t+'<span class="fs">'+sm+'</span><span class="chev" aria-hidden="true"></span></button></h2>'}
 function chip(k,t){return'<span class="chip '+k+'">'+t+"</span>"}
 function stat(u,b,ab){if(ab)return u>b?chip("bad","Über Budget"):chip("ok","✓ Abgerechnet");if(b<=0)return u>0?chip("bad","Überschritten"):"";if(u>b)return chip("bad","Überschritten");if(u>=b*.9)return chip("warn","Knapp");return u>0?chip("ok","Im Budget"):chip("mute","Ungenutzt")}
 function item(n,r,x,b,ch,d){return'<div class="it'+(d?" done":"")+'"><div class="top"><b>'+e(n)+"</b>"+ch+"</div>"+b+'<div class="top sub"><span>'+r+"</span><span>"+x+"</span></div></div>"}
 function vUe(st){var used=st.bez+st.off,frei=st.rahmen-used,h='<div class="hd"><h2>Übersicht</h2></div><div class="sum"><div class="row"><button class="kpi" data-a="calc" data-v="rahmen"><small>Rahmen</small><b>'+eur(st.rahmen)+'</b></button><button class="kpi" data-a="calc" data-v="aus"><small>Ausgegeben</small><b>'+eur(used)+'</b></button><button class="kpi" data-a="calc" data-v="frei"><small>Frei</small><b class="'+(frei<0?"neg":"")+'">'+eur(frei)+"</b></button></div>"+gbar(st.bez,st.off,st.rahmen)+'<small class="n">Bezahlt '+eur(st.bez)+" · Offen "+eur(st.off)+"</small></div>";
 if(!st.rahmen)h+='<p class="hint">Trage unter „Töpfe“ den Rahmen von Bank und KfW ein.</p>';
 else h+='<div class="sum"><div class="row"><button class="kpi" data-a="calc" data-v="prog"><small>Prognose</small><b>'+eur(st.prog)+'</b></button><button class="kpi" data-a="calc" data-v="spiel"><small>Spielraum</small><b class="'+(st.prog>st.rahmen?"neg":"")+'">'+eur(st.rahmen-st.prog)+'</b></button></div><small class="n">Prognose = geplante Gesamtkosten. Tippe auf einen Betrag für den Rechenweg.</small></div>';
-h+=bemLine(st);h+='<div class="card"><h2>Töpfe</h2>';
+h+=bemLine(st);h+=fcard("ft","Töpfe","Frei "+eur(frei));
 S.toepfe.forEach(function(t){var x=st.t[t.id],u=x.bez+x.off;h+=item(t.name,eur(u)+" von "+eur(t.rahmen),(u>t.rahmen?'<b class="neg">Über Rahmen um '+eur(u-t.rahmen)+"</b>":"Frei "+eur(t.rahmen-u)),bar(x.bez,x.off,t.rahmen),stat(u,t.rahmen,false))});
-h+='</div><div class="card"><h2>Gewerke</h2>';var c=0;
+h+="</div>"+fcard("fg","Gewerke",S.gewerke.length+" Gewerke");var c=0;
 S.gewerke.forEach(function(g){var x=st.g[g.id],u=x.bez+x.off;if(!g.budget&&!u)return;c++;h+=item(g.name,eur(u)+" von "+eur(g.budget),(u>g.budget?'<b class="neg">Über Budget um '+eur(u-g.budget)+"</b>":"Frei "+eur(g.budget-u)),bar(x.bez,x.off,g.budget),stat(u,g.budget,g.abger),!!g.abger)});
 if(!c)h+='<p class="hint">Lege unter „Gewerke“ Budgets fest oder erfasse Rechnungen.</p>';
 return h+'</div><p class="hint">Knapp = ab 90 % des Budgets ausgegeben. Grün hinterlegt = Gewerk abgerechnet.</p>'}
@@ -264,6 +273,7 @@ else if(a==="add-g")fNV("gewerke",null,"budget","Neues Gewerk","","Budget in €
 else if(a==="edit-g")fNV("gewerke",get(S.gewerke,id),"budget","","Gewerk bearbeiten","Budget in €");
 else if(a==="add-t")fNV("toepfe",null,"rahmen","Neuer Topf","","Rahmen in €");
 else if(a==="edit-t")fNV("toepfe",get(S.toepfe,id),"rahmen","","Topf bearbeiten","Rahmen in €");
+else if(a==="fold"){S.ui=S.ui||{};S.ui[b.dataset.v]=!S.ui[b.dataset.v];save();render()}
 else if(a==="calc")calc(b.dataset.v);
 else if(a==="bs"){get(S.bem,id).status=b.dataset.v;save();render()}
 else if(a==="add-b")fP();

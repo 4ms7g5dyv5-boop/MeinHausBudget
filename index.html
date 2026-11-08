@@ -252,6 +252,7 @@ input.err{border-color:var(--bad)}
 <button class="nav-fab" id="navFab" type="button" aria-label="Navigation öffnen" aria-expanded="false"><span class="fab-plus">+</span><span class="fab-caption">Menü</span></button>
 <dialog id="dlg" tabindex="-1" autofocus aria-label="Bearbeiten"><form id="f" autocomplete="off"></form></dialog>
 <input type="file" id="imp" accept="application/json,.json" hidden>
+<input type="file" id="syncFile" accept="application/json,.json" hidden>
 <script>
 var K="baubudget-v1",A=document.getElementById("app"),D=document.getElementById("dlg"),F=document.getElementById("f"),tab="ue",S=load();
 function def(){return{toepfe:[{id:"t1",name:"Bankdarlehen",rahmen:0},{id:"t2",name:"KfW-Darlehen",rahmen:0},{id:"t3",name:"Eigenkapital",rahmen:0}],
@@ -407,10 +408,28 @@ h+='<div style="height:6px"></div>'+ctot("Prognose",st.prog)+"<small>Budgets (be
 F.innerHTML="<h3>"+t+"</h3>"+h+'<div class="btns"><button type="button" class="pri" id="fc">Schließen</button></div>';
 F.onsubmit=function(ev){ev.preventDefault();D.close()};document.getElementById("fc").onclick=function(){D.close()};if(!D.open)D.showModal()}
 var BI={offen:'<circle cx="12" cy="12" r="8" stroke-dasharray="3.2 3.2"/>',standard:'<path d="M6 9h12M6 15h12"/>',auf:'<path d="M12 19V5M6 11l6-6 6 6"/>',ab:'<path d="M12 5v14M6 13l6 6 6-6"/>'};
-function vDa(){return'<div class="hd"><h2>Datensicherung</h2></div><div class="card"><h2>Sichern und wiederherstellen</h2><small>Deine Daten liegen nur auf diesem Gerät. Exportiere sie regelmäßig als Datei und bewahre sie sicher auf, zum Beispiel in iCloud oder per E-Mail an dich selbst.</small><button class="btn" data-a="exp">Daten exportieren</button><button class="btn" data-a="imp">Daten importieren</button></div>'}
+function vDa(){var lf=localStorage.getItem("baubudget-sync-filename")||"Noch keine Datei ausgewählt";return'<div class="hd"><h2>Datensicherung</h2></div><div class="card"><h2>Sichern und wiederherstellen</h2><small>Deine Daten liegen lokal auf diesem Gerät. Exportiere regelmäßig eine Sicherung oder gleiche sie mit einer JSON-Datei ab.</small><button class="btn" data-a="exp">Daten exportieren</button><button class="btn" data-a="imp">Daten importieren</button><hr><h2>Datei-Synchronisierung</h2><small>Verknüpfe eine JSON-Sicherungsdatei. Beim Synchronisieren entscheidest du, ob die Datei in die App übernommen oder mit dem aktuellen App-Stand aktualisiert wird.</small><small id="syncFileName" class="n fade">Zuletzt verwendet: '+e(lf)+'</small><button class="btn pri" data-a="sync-file">Mit Sicherungsdatei synchronisieren</button><small class="n fade">Auf unterstützten Desktop-Browsern kann die Datei gemerkt und direkt aktualisiert werden. Auf iPhone/Safari musst du sie erneut auswählen; eine aktualisierte Kopie wird anschließend exportiert.</small></div>'}
 var pq=0;function pset(){pq=0;document.documentElement.style.setProperty("--p",Math.min(1,Math.max(0,window.scrollY/90)).toFixed(3))}
 window.addEventListener("scroll",function(){if(!pq)pq=requestAnimationFrame(pset)},{passive:true});
 function exp(){var b=new Blob([JSON.stringify(S,null,1)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="baubudget-"+today()+".json";document.body.appendChild(a);a.click();a.remove()}
+var syncHandle=null;
+function syncDB(mode,value){return new Promise(function(resolve,reject){if(!window.indexedDB){reject(new Error("IndexedDB nicht verfügbar"));return}var q=indexedDB.open("baubudget-sync",1);q.onupgradeneeded=function(){q.result.createObjectStore("handles")};q.onerror=function(){reject(q.error)};q.onsuccess=function(){var db=q.result,tx=db.transaction("handles",mode),st=tx.objectStore("handles"),req=mode==="readonly"?st.get("backup"):st.put(value,"backup");req.onsuccess=function(){resolve(req.result)};req.onerror=function(){reject(req.error)};tx.oncomplete=function(){db.close()};tx.onerror=function(){reject(tx.error)}}})}
+function validBackup(o){return !!o&&Array.isArray(o.toepfe)&&Array.isArray(o.gewerke)&&Array.isArray(o.rechnungen)}
+function rememberSyncFile(name){try{localStorage.setItem("baubudget-sync-filename",name||"Sicherungsdatei")}catch(x){}}
+function syncNotice(msg){var el=document.getElementById("syncFileName");if(el)el.textContent=msg}
+async function writeSyncFile(handle){var w=await handle.createWritable();await w.write(JSON.stringify(S,null,1));await w.close()}
+async function syncWithFile(file,handle){var o;try{o=JSON.parse(await file.text())}catch(x){alert("Die ausgewählte Datei enthält kein gültiges JSON.");return}if(!validBackup(o)){alert("Die Datei ist keine gültige Baubudget-Sicherung.");return}if(handle){syncHandle=handle;try{await syncDB("readwrite",handle)}catch(x){}}
+rememberSyncFile(file.name||"Sicherungsdatei");var current=JSON.stringify(S),incoming=JSON.stringify(mig(o));if(current===incoming){syncNotice("Datei aktuell: "+(file.name||"Sicherungsdatei"));alert("App und Sicherungsdatei haben bereits denselben Datenstand.");return}
+var takeFile=confirm("Die Sicherungsdatei enthält einen anderen Datenstand.\n\nOK: Daten aus der Datei in die App übernehmen.\nAbbrechen: Aktuellen App-Stand in die Datei schreiben.");
+if(takeFile){if(!confirm("Achtung: Der aktuelle Datenstand dieser App wird durch den Dateiinhalt ersetzt. Fortfahren?"))return;S=mig(o);save();render();syncNotice("Übernommen: "+(file.name||"Sicherungsdatei"));alert("Der Datenstand aus der Datei wurde übernommen.");return}
+if(handle){try{await writeSyncFile(handle);syncNotice("Aktualisiert: "+(file.name||"Sicherungsdatei"));alert("Die Sicherungsdatei wurde mit dem aktuellen App-Stand aktualisiert.")}catch(x){alert("Die Datei konnte nicht geschrieben werden. Bitte wähle sie erneut aus und erlaube den Schreibzugriff.")}}
+else{if(confirm("Dieser Browser kann die ausgewählte Datei nicht direkt überschreiben. Soll stattdessen eine aktualisierte JSON-Sicherung heruntergeladen werden?")){exp();syncNotice("Aktualisierte Kopie exportiert – Originaldatei bleibt unverändert")}}
+}
+async function startFileSync(){if(window.showOpenFilePicker){try{var h=syncHandle; if(!h){try{h=await syncDB("readonly")}catch(x){h=null}}if(h){var perm=await h.queryPermission({mode:"readwrite"});if(perm!=="granted")perm=await h.requestPermission({mode:"readwrite"});if(perm==="granted"){var f=await h.getFile();await syncWithFile(f,h);return}else{h=null}}
+var picked=await window.showOpenFilePicker({multiple:false,types:[{description:"Baubudget-Sicherung",accept:{"application/json":[".json"]}}]});h=picked[0];var p=await h.requestPermission({mode:"readwrite"});if(p!=="granted"){alert("Bitte erlaube den Schreibzugriff auf die Sicherungsdatei.");return}var f2=await h.getFile();await syncWithFile(f2,h);return}catch(x){if(x&&x.name==="AbortError")return;console.warn("Dateizugriff nicht verfügbar",x)}}
+document.getElementById("syncFile").click()}
+document.getElementById("syncFile").onchange=async function(ev){var f=ev.target.files&&ev.target.files[0];if(f)await syncWithFile(f,null);ev.target.value=""};
+
 document.getElementById("imp").onchange=function(ev){var f=ev.target.files[0];if(!f)return;var r=new FileReader();
 r.onload=function(){try{var o=JSON.parse(r.result);if(!Array.isArray(o.toepfe)||!Array.isArray(o.gewerke)||!Array.isArray(o.rechnungen))throw 0;
 if(confirm("Die aktuellen Daten werden ersetzt. Fortfahren?")){S=mig(o);save();render()}}catch(x){alert("Die Datei ist keine gültige Baubudget-Sicherung.")}ev.target.value=""};r.readAsText(f)};
@@ -443,7 +462,8 @@ else if(a==="edit-o")fO(get(S.optionen,id));
 else if(a==="add-a")fA();
 else if(a==="edit-a")fA(get(S.abzuege,id));
 else if(a==="exp")exp();
-else if(a==="imp")document.getElementById("imp").click()});
+else if(a==="imp")document.getElementById("imp").click();
+else if(a==="sync-file")startFileSync()});
 document.addEventListener("keydown",function(ev){if(ev.key==="Escape")toggleNav(false);if(ev.key==="Enter"&&ev.target.classList&&ev.target.classList.contains("li"))ev.target.click()});
 render();
 try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(x){}

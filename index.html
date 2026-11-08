@@ -118,6 +118,19 @@ textarea{display:block;width:100%;margin-top:4px;padding:12px;font:16px/1.4 syst
 .fbar label{margin-top:0}
 .fbar .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .fbar .sw{margin-top:4px}
+.fb{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.fbtn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:42px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:.95rem;font-weight:600}
+.fbtn.sq{width:42px;padding:0}
+.fbtn.on{border-color:var(--accent);color:var(--accent)}
+.fbtn .chev{margin:-3px 0 0 2px;width:8px;height:8px}
+.fbtn[aria-expanded="true"] .chev{transform:rotate(-135deg);margin-top:3px}
+.bdg{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:99px;background:var(--accent);color:var(--onacc);font-size:.75rem}
+.fcnt{margin-left:auto;color:var(--muted);font-size:.85rem}
+.fpan{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px;display:grid;gap:10px}
+.fpan label{margin-top:0}
+.fpan .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fpan .sw{margin-top:4px}
+.fpan input[type=text]{margin-top:0}
 .ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}
 dialog{border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--text);padding:16px;width:min(92vw,440px)}
 dialog::backdrop{background:rgba(0,0,0,.45)}
@@ -189,22 +202,27 @@ return!q||(nm(S.gewerke,r.gewerk)+" "+(r.notiz||"")+" "+nm(S.toepfe,r.topf)).toL
 by={neu:function(a,b){return b.datum.localeCompare(a.datum)},alt:function(a,b){return a.datum.localeCompare(b.datum)},hoch:function(a,b){return b.betrag-a.betrag},tief:function(a,b){return a.betrag-b.betrag},gew:function(a,b){return nm(S.gewerke,a.gewerk).localeCompare(nm(S.gewerke,b.gewerk),"de")}};
 l.sort(by[f.so]);var h="";
 if(!S.rechnungen.length)return'<p class="hint">Noch keine Rechnungen. Tippe auf „+ Rechnung“, um die erste zu erfassen.</p>';
-h+='<p class="hint">'+l.length+" von "+S.rechnungen.length+" Rechnungen</p>";
+cnt=l.length+" von "+S.rechnungen.length;
 if(!l.length)h+='<p class="hint">Keine Treffer.</p>';
 l.forEach(function(r){var t=nm(S.toepfe,r.topf),ok=r.status==="bezahlt";
 h+='<div class="li" tabindex="0" role="button" data-a="menu-r" data-id="'+r.id+'"><button class="chk'+(ok?" on":"")+'" data-a="tog" data-id="'+r.id+'" aria-label="'+(ok?"Als offen markieren":"Als bezahlt markieren")+'">'+(ok?"✓":"")+'</button><div class="m"><b>'+e(nm(S.gewerke,r.gewerk)||"Ohne Gewerk")+"</b><small>"+dt(r.datum)+(t?" · "+e(t):"")+(r.notiz?" · "+e(r.notiz):"")+'</small></div><span class="a">'+eur(r.betrag,2)+"</span></div>"});
 return h}
-function vRe(){return'<div class="hd"><h2>Rechnungen</h2><button class="pri" data-a="add-r">+ Rechnung</button></div><div class="card fbar"><label>Suche<input type="text" data-ff="re" data-fk="q" placeholder="Gewerk, Notiz oder Topf" value="'+e(flt.re.q)+'"></label><div class="two">'+sel("re","st","Status",[["all","Alle"],["open","Offen"],["paid","Bezahlt"]],flt.re.st)+sel("re","gw","Gewerk",[["","Alle"]].concat(S.gewerke.map(function(g){return[g.id,g.name]})),flt.re.gw)+"</div>"+sel("re","so","Sortierung",[["neu","Datum: neueste zuerst"],["alt","Datum: älteste zuerst"],["hoch","Betrag: höchster zuerst"],["tief","Betrag: niedrigster zuerst"],["gew","Gewerk A–Z"]],flt.re.so)+swx("re","Bezahlte ausblenden",flt.re.hide)+'</div><div id="lst">'+listRe()+"</div>"}
+var cnt="",LUPE='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>';
+function nact(k){var f=flt[k],n=0;if(f.st!=="all")n++;if(f.hide)n++;if(k==="re"&&f.gw)n++;if(f.so!==(k==="ge"?"name":"neu"))n++;return n}
+function fbar(k,opts){var f=flt[k],n=nact(k);return'<div class="fb"><button type="button" class="fbtn sq'+(f.q?" on":"")+'" data-a="fs" data-v="'+k+'" aria-label="Suche" aria-expanded="'+!!f.sopen+'">'+LUPE+'</button><button type="button" class="fbtn'+(n?" on":"")+'" data-a="fo" data-v="'+k+'" aria-expanded="'+!!f.oopen+'">Optionen'+(n?'<span class="bdg">'+n+"</span>":"")+'<span class="chev" aria-hidden="true"></span></button><span class="fcnt" id="fcnt">'+cnt+"</span></div>"+(f.sopen?'<div class="fpan"><input type="text" data-ff="'+k+'" data-fk="q" placeholder="'+(k==="ge"?"Gewerk suchen":"Gewerk, Notiz oder Topf suchen")+'" value="'+e(f.q)+'"></div>':"")+(f.oopen?'<div class="fpan">'+opts+"</div>":"")}
+function vRe(){cnt="";var lh=listRe(),o='<div class="two">'+sel("re","st","Status",[["all","Alle"],["open","Offen"],["paid","Bezahlt"]],flt.re.st)+sel("re","gw","Gewerk",[["","Alle"]].concat(S.gewerke.map(function(g){return[g.id,g.name]})),flt.re.gw)+"</div>"+sel("re","so","Sortierung",[["neu","Datum: neueste zuerst"],["alt","Datum: älteste zuerst"],["hoch","Betrag: höchster zuerst"],["tief","Betrag: niedrigster zuerst"],["gew","Gewerk A–Z"]],flt.re.so)+swx("re","Bezahlte ausblenden",flt.re.hide);
+return'<div class="hd"><h2>Rechnungen</h2><button class="pri" data-a="add-r">+ Rechnung</button></div>'+fbar("re",o)+'<div id="lst">'+lh+"</div>"}
 function listGe(st){var f=flt.ge,q=f.q.trim().toLowerCase(),sp=function(g){var x=st.g[g.id];return x.bez+x.off},l=S.gewerke.filter(function(g){
 if(q&&g.name.toLowerCase().indexOf(q)<0)return false;if(f.hide&&g.abger)return false;if(f.st==="open"&&g.abger)return false;if(f.st==="done"&&!g.abger)return false;return!(f.st==="over"&&!(sp(g)>g.budget))}),
 by={name:function(a,b){return a.name.localeCompare(b.name,"de")},budget:function(a,b){return b.budget-a.budget},spent:function(a,b){return sp(b)-sp(a)},open:function(a,b){return(a.abger?1:0)-(b.abger?1:0)||a.name.localeCompare(b.name,"de")}};
-l.sort(by[f.so]);var h='<p class="hint">'+l.length+" von "+S.gewerke.length+" Gewerken</p>";
+l.sort(by[f.so]);cnt=l.length+" von "+S.gewerke.length;var h="";
 if(!l.length)h+='<p class="hint">Keine Treffer.</p>';
 l.forEach(function(g){h+='<div class="li'+(g.abger?" done":"")+'" tabindex="0" role="button" data-a="edit-g" data-id="'+g.id+'"><div class="m"><b>'+e(g.name)+"</b><small>Ausgegeben "+eur(sp(g))+(g.abger?" · abgerechnet":"")+'</small></div><span class="a">'+eur(g.budget)+"</span></div>"});
 return h}
-function vGe(st){return'<div class="hd"><h2>Gewerke</h2><button class="pri" data-a="add-g">+ Gewerk</button></div><p class="hint">Verteilt: '+eur(st.budget)+" von "+eur(st.rahmen)+' Rahmen</p><div class="card fbar"><label>Suche<input type="text" data-ff="ge" data-fk="q" placeholder="Name eingeben" value="'+e(flt.ge.q)+'"></label><div class="two">'+sel("ge","st","Filter",[["all","Alle"],["open","Offen"],["done","Abgerechnet"],["over","Über Budget"]],flt.ge.st)+sel("ge","so","Sortierung",[["name","Name A–Z"],["budget","Budget ↓"],["spent","Ausgegeben ↓"],["open","Offene zuerst"]],flt.ge.so)+"</div>"+swx("ge","Erledigte ausblenden",flt.ge.hide)+'</div><div id="lst">'+listGe(st)+"</div>"}
-function updList(){var l=document.getElementById("lst");if(l)l.innerHTML=tab==="ge"?listGe(stats()):listRe()}
-function fev(ev){var el=ev.target;if(!el.dataset||!el.dataset.ff)return;flt[el.dataset.ff][el.dataset.fk]=el.type==="checkbox"?el.checked:el.value;updList()}
+function vGe(st){cnt="";var lh=listGe(st),o='<div class="two">'+sel("ge","st","Filter",[["all","Alle"],["open","Offen"],["done","Abgerechnet"],["over","Über Budget"]],flt.ge.st)+sel("ge","so","Sortierung",[["name","Name A–Z"],["budget","Budget ↓"],["spent","Ausgegeben ↓"],["open","Offene zuerst"]],flt.ge.so)+"</div>"+swx("ge","Erledigte ausblenden",flt.ge.hide);
+return'<div class="hd"><h2>Gewerke</h2><button class="pri" data-a="add-g">+ Gewerk</button></div><p class="hint">Verteilt: '+eur(st.budget)+" von "+eur(st.rahmen)+" Rahmen</p>"+fbar("ge",o)+'<div id="lst">'+lh+"</div>"}
+function updList(){var l=document.getElementById("lst");if(l){l.innerHTML=tab==="ge"?listGe(stats()):listRe();var c=document.getElementById("fcnt");if(c)c.textContent=cnt}}
+function fev(ev){var el=ev.target;if(!el.dataset||!el.dataset.ff)return;flt[el.dataset.ff][el.dataset.fk]=el.type==="checkbox"?el.checked:el.value;if(el.type==="text"){updList();var sb=document.querySelector('[data-a="fs"][data-v="'+el.dataset.ff+'"]');if(sb)sb.classList.toggle("on",!!el.value.trim())}else render()}
 document.addEventListener("input",fev);document.addEventListener("change",fev);
 function menuR(r){F.innerHTML="<h3>"+e(nm(S.gewerke,r.gewerk)||"Ohne Gewerk")+'</h3><small style="color:var(--muted)">'+dt(r.datum)+" · "+eur(r.betrag,2)+'</small><div class="menu"><button type="button" data-a="m-edit" data-id="'+r.id+'">Bearbeiten</button><button type="button" data-a="m-note" data-id="'+r.id+'">Notiz öffnen'+(r.notiz?"":" (noch leer)")+'</button><button type="button" class="del" data-a="m-del" data-id="'+r.id+'">Löschen</button><button type="button" id="fc">Abbrechen</button></div>';
 F.onsubmit=function(ev){ev.preventDefault()};document.getElementById("fc").onclick=function(){D.close()};if(!D.open)D.showModal()}
@@ -308,6 +326,8 @@ else if(a==="menu-r")menuR(get(S.rechnungen,id));
 else if(a==="m-edit"){D.close();fRe(get(S.rechnungen,id))}
 else if(a==="m-note")fN(get(S.rechnungen,id));
 else if(a==="m-del"){if(confirm("Rechnung wirklich löschen?")){S.rechnungen=S.rechnungen.filter(function(x){return x.id!==id});save();D.close();render()}}
+else if(a==="fs"){var f1=flt[b.dataset.v];f1.sopen=!f1.sopen;render();if(f1.sopen){var qi=document.querySelector('input[data-fk="q"]');if(qi)qi.focus()}}
+else if(a==="fo"){var f2=flt[b.dataset.v];f2.oopen=!f2.oopen;render()}
 else if(a==="fold"){S.ui=S.ui||{};S.ui[b.dataset.v]=!S.ui[b.dataset.v];save();render()}
 else if(a==="calc")calc(b.dataset.v);
 else if(a==="bs"){get(S.bem,id).status=b.dataset.v;save();render()}

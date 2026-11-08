@@ -90,7 +90,7 @@ h2{font-size:1.3rem;margin:0}
 .cr b{white-space:nowrap;font-weight:600}
 .cr.tot{border-bottom:0;border-top:2px solid var(--text);margin-top:4px}
 .cr.tot b{font-weight:800}
-dialog{max-height:85vh}
+dialog{max-height:85vh;max-height:min(85dvh,720px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 dialog h4{margin:14px 0 2px;font-size:.9rem;color:var(--muted)}
 .li.done{background:var(--okbg);border-color:var(--okline)}
 .it.done{background:var(--okbg);border:1px solid var(--okline);border-radius:12px;padding:8px 10px}
@@ -176,7 +176,7 @@ input.err{border-color:var(--bad)}
   <button class="radial-item" data-a="tab" data-v="da"><span class="ri"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m-4 4 4-4 4 4"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></span><span>Sicherung</span></button>
 </section>
 <button class="nav-fab" id="navFab" type="button" aria-label="Navigation öffnen" aria-expanded="false"><span class="fab-plus">+</span><span class="fab-caption">Menü</span></button>
-<dialog id="dlg"><form id="f" autocomplete="off"></form></dialog>
+<dialog id="dlg" tabindex="-1" autofocus aria-label="Bearbeiten"><form id="f" autocomplete="off"></form></dialog>
 <input type="file" id="imp" accept="application/json,.json" hidden>
 <script>
 var K="baubudget-v1",A=document.getElementById("app"),D=document.getElementById("dlg"),F=document.getElementById("f"),tab="ue",S=load();

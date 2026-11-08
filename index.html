@@ -21,7 +21,7 @@ html{scroll-padding-top:env(safe-area-inset-top,0px)}
 button{cursor:pointer;font-family:inherit;touch-action:manipulation}
 button:focus-visible,input:focus-visible,select:focus-visible,.li:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 body{margin:0;background:var(--bg);color:var(--text);font:17px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
-main{max-width:560px;margin:0 auto;padding:16px 16px 112px}
+main{max-width:560px;margin:0 auto;padding:16px 16px 120px}
 h2{font-size:1.3rem;margin:0}
 .hd{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
 .sum,.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
@@ -54,10 +54,16 @@ h2{font-size:1.3rem;margin:0}
 .li .a{font-weight:600;white-space:nowrap}
 .chk{flex:none;width:34px;height:34px;border-radius:50%;border:2px solid var(--itemline);background:var(--card);color:var(--onacc);font-size:1rem;line-height:1;padding:0}
 .chk.on{background:var(--ok);border-color:var(--ok)}
-.tabs{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
-.tabs button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:0;color:var(--muted);padding:9px 0 7px;min-width:0;font-size:clamp(.58rem,2.5vw,.7rem);line-height:1.1}
-.tabs svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.tabs button.on{color:var(--accent);font-weight:600;box-shadow:inset 0 3px 0 var(--accent)}
+.nav-fab{position:fixed;z-index:21;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:68px;height:68px;border:0;border-radius:50%;background:linear-gradient(145deg,var(--accent),#1746b5);color:#fff;box-shadow:0 8px 24px rgba(25,75,170,.34),0 0 0 6px var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0}
+.fab-plus{font-size:32px;line-height:28px;font-weight:300;transition:transform .25s}.fab-caption{font-size:11px;font-weight:700;letter-spacing:.2px}.nav-fab.open .fab-plus{transform:rotate(45deg)}
+.nav-scrim{position:fixed;inset:0;z-index:18;background:rgba(10,16,28,.46);backdrop-filter:blur(3px)}
+.radial-menu{position:fixed;z-index:20;left:50%;bottom:calc(100px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(12px) scale(.96);width:min(350px,calc(100vw - 28px));padding:16px;border:1px solid var(--line);border-radius:24px;background:var(--card);box-shadow:0 18px 55px rgba(0,0,0,.25);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;opacity:0;transition:opacity .2s,transform .2s}
+.radial-menu.show{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
+.radial-item{min-height:88px;border:1px solid var(--line);border-radius:16px;background:var(--item);color:var(--text);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;font-size:12px;font-weight:650;padding:8px 4px}
+.radial-item .ri{width:38px;height:38px;border-radius:13px;display:grid;place-items:center;background:var(--field);color:var(--accent);font-size:23px;line-height:1}
+.radial-item.active{border-color:var(--accent);background:var(--field);color:var(--accent)}
+.radial-item:active{transform:scale(.97)}
+@media(min-width:700px){.nav-fab{bottom:24px}.radial-menu{bottom:110px}}
 .pri{background:var(--accent)!important;color:var(--onacc)!important;border-color:var(--accent)!important}
 .hd .pri,.card .pri{border:0;border-radius:10px;padding:10px 14px;font-size:.95rem}
 .btn{width:100%;margin-top:8px;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:1rem}
@@ -157,14 +163,16 @@ input.err{border-color:var(--bad)}
 <body>
 <header class="apphead"><svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="cg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe9a0"/><stop offset=".5" stop-color="#f2b73a"/><stop offset="1" stop-color="#b9791a"/></linearGradient><symbol id="coin" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="url(#cg)" stroke="#8a5a10" stroke-width="2"/><circle cx="24" cy="24" r="16.5" fill="none" stroke="#fff3c2" stroke-opacity=".75" stroke-width="2"/><text x="24" y="32" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="800" font-size="22" fill="#7a4a08">€</text></symbol></defs></svg><svg class="coin l" aria-hidden="true"><use href="#coin"/></svg><h1>Mein Haus Budget</h1><svg class="coin r" aria-hidden="true"><use href="#coin"/></svg></header>
 <main id="app"></main>
-<nav class="tabs">
-<button data-a="tab" data-v="ue"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Übersicht</span></button>
-<button data-a="tab" data-v="to"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg><span>Töpfe</span></button>
-<button data-a="tab" data-v="ge"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg><span>Gewerke</span></button>
-<button data-a="tab" data-v="be"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="13.5" cy="6.5" r="1"/><circle cx="17.5" cy="10.5" r="1"/><circle cx="8.5" cy="7.5" r="1"/><circle cx="6.5" cy="12.5" r="1"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.9 0 1.6-.7 1.6-1.6 0-.4-.2-.8-.4-1.1-.3-.3-.4-.7-.4-1.1 0-.9.7-1.6 1.6-1.6H16c3.1 0 5.5-2.4 5.5-5.5C22 6 17.5 2 12 2z"/></svg><span>Bemusterung</span></button>
-<button data-a="tab" data-v="re"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 2h14v20l-3-2-2 2-2-2-2 2-2-2-3 2z"/><path d="M9 7h6M9 11h6"/></svg><span>Rechnungen</span></button>
-<button data-a="tab" data-v="da"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M4 17v3h16v-3"/></svg><span>Sicherung</span></button>
-</nav>
+<div class="nav-scrim" id="navScrim" hidden></div>
+<section class="radial-menu" id="radialMenu" aria-label="Hauptnavigation" aria-hidden="true" hidden>
+  <button class="radial-item" data-a="tab" data-v="ue"><span class="ri">▦</span><span>Übersicht</span></button>
+  <button class="radial-item" data-a="tab" data-v="to"><span class="ri">▤</span><span>Töpfe</span></button>
+  <button class="radial-item" data-a="tab" data-v="ge"><span class="ri">⚒</span><span>Gewerke</span></button>
+  <button class="radial-item" data-a="tab" data-v="be"><span class="ri">◉</span><span>Bemusterung</span></button>
+  <button class="radial-item" data-a="tab" data-v="re"><span class="ri">▧</span><span>Rechnungen</span></button>
+  <button class="radial-item" data-a="tab" data-v="da"><span class="ri">⇩</span><span>Sicherung</span></button>
+</section>
+<button class="nav-fab" id="navFab" type="button" aria-label="Navigation öffnen" aria-expanded="false"><span class="fab-plus">+</span><span class="fab-caption">Menü</span></button>
 <dialog id="dlg"><form id="f" autocomplete="off"></form></dialog>
 <input type="file" id="imp" accept="application/json,.json" hidden>
 <script>
@@ -244,7 +252,7 @@ function vTo(st){var h='<div class="hd"><h2>Töpfe</h2><button class="pri" data-
 S.toepfe.forEach(function(t){var x=st.t[t.id];h+='<div class="li" tabindex="0" role="button" data-a="edit-t" data-id="'+t.id+'"><div class="m"><b>'+e(t.name)+"</b><small>Genutzt "+eur(x.bez+x.off)+'</small></div><span class="a">'+eur(t.rahmen)+"</span></div>"});
 return h}
 function render(){var st=stats();A.innerHTML=tab==="ue"?vUe(st):tab==="re"?vRe():tab==="be"?vBe(st):tab==="da"?vDa():tab==="ge"?vGe(st):vTo(st);
-document.querySelectorAll(".tabs button").forEach(function(b){b.classList.toggle("on",b.dataset.v===tab)})}
+document.querySelectorAll(".radial-item").forEach(function(b){b.classList.toggle("active",b.dataset.v===tab)})}
 function openForm(title,fs,v,ok,del){var h="<h3>"+title+"</h3>";
 fs.forEach(function(f){if(f.t==="sw"){h+='<label class="sw"><span>'+f.l+'</span><input type="checkbox" name="'+f.k+'"'+(v[f.k]==="1"?" checked":"")+"><i></i></label>";return}h+="<label>"+f.l;
 if(f.t==="select")h+='<select name="'+f.k+'">'+f.o.map(function(o){return'<option value="'+e(o[0])+'"'+(o[0]===v[f.k]?" selected":"")+">"+e(o[1])+"</option>"}).join("")+"</select>";
@@ -329,8 +337,11 @@ function exp(){var b=new Blob([JSON.stringify(S,null,1)],{type:"application/json
 document.getElementById("imp").onchange=function(ev){var f=ev.target.files[0];if(!f)return;var r=new FileReader();
 r.onload=function(){try{var o=JSON.parse(r.result);if(!Array.isArray(o.toepfe)||!Array.isArray(o.gewerke)||!Array.isArray(o.rechnungen))throw 0;
 if(confirm("Die aktuellen Daten werden ersetzt. Fortfahren?")){S=mig(o);save();render()}}catch(x){alert("Die Datei ist keine gültige Baubudget-Sicherung.")}ev.target.value=""};r.readAsText(f)};
+function toggleNav(force){var menu=document.getElementById("radialMenu"),scrim=document.getElementById("navScrim"),fab=document.getElementById("navFab"),open=typeof force==="boolean"?force:menu.hidden;menu.hidden=!open;scrim.hidden=!open;fab.classList.toggle("open",open);fab.setAttribute("aria-expanded",String(open));fab.setAttribute("aria-label",open?"Navigation schließen":"Navigation öffnen");menu.setAttribute("aria-hidden",String(!open));if(open)requestAnimationFrame(function(){menu.classList.add("show")});else menu.classList.remove("show")}
+document.getElementById("navFab").addEventListener("click",function(){toggleNav()});
+document.getElementById("navScrim").addEventListener("click",function(){toggleNav(false)});
 document.addEventListener("click",function(ev){var b=ev.target.closest("[data-a]");if(!b)return;var a=b.dataset.a,id=b.dataset.id;
-if(a==="tab"){tab=b.dataset.v;render();window.scrollTo(0,0)}
+if(a==="tab"){tab=b.dataset.v;toggleNav(false);render();window.scrollTo(0,0)}
 else if(a==="tog"){var r=get(S.rechnungen,id);r.status=r.status==="bezahlt"?"offen":"bezahlt";save();render()}
 else if(a==="add-r")fRe();
 else if(a==="edit-r")fRe(get(S.rechnungen,id));
@@ -356,7 +367,7 @@ else if(a==="add-a")fA();
 else if(a==="edit-a")fA(get(S.abzuege,id));
 else if(a==="exp")exp();
 else if(a==="imp")document.getElementById("imp").click()});
-document.addEventListener("keydown",function(ev){if(ev.key==="Enter"&&ev.target.classList&&ev.target.classList.contains("li"))ev.target.click()});
+document.addEventListener("keydown",function(ev){if(ev.key==="Escape")toggleNav(false);if(ev.key==="Enter"&&ev.target.classList&&ev.target.classList.contains("li"))ev.target.click()});
 render();
 try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(x){}
 try{if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js")}catch(x){}
